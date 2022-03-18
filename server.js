@@ -20,7 +20,6 @@ const posterRouter = require('./api/routes/posters')
 const addressRouter = require('./api/routes/address')
 const orderRouter = require('./api/routes/orders')
 
-const port = 3000
 
 // Middleware
 app.use(bodyParser.urlencoded({ extended: false }))
@@ -38,4 +37,15 @@ app.use('/address', addressRouter)
 app.use('/orders', orderRouter)
 
 // Make my server work on port 3000 and listen when user use it
-app.listen(port, () => console.log("Server Started"))
+const http = require('http')
+
+const appPort = process.env.PORT || 8080
+app.set('port', appPort)
+
+// Create Web server
+http
+    .createServer(app)
+    .listen(
+        appPort,
+        () => console.log(`Node app running at localhost:${appPort}`)
+    )
