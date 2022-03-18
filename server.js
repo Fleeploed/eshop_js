@@ -20,7 +20,7 @@ const posterRouter = require('./api/routes/posters')
 const addressRouter = require('./api/routes/address')
 const orderRouter = require('./api/routes/orders')
 
-const port = 80
+const port = 3000
 
 // Middleware
 app.use(bodyParser.urlencoded({ extended: false }))
