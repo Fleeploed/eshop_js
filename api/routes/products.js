@@ -33,11 +33,11 @@ router.get("/all", (request, response) => {
     var page = request.query.page;
     var page_size = request.query.page_size;
 
-    if(page == null || page < 1){
+    if (page == null || page < 1) {
         page = 1;
     }
- 
-    if(page_size == null){
+
+    if (page_size == null) {
         page_size = 20;
     }
 
@@ -50,14 +50,14 @@ router.get("/all", (request, response) => {
         parseInt(page_size),
         parseInt(page)
     ];
-    
+
     const query = "SELECT * FROM product LIMIT ? OFFSET ?"
-    database.query(query,args, (error, result) => {
-        if(error) throw error;
+    database.query(query, args, (error, result) => {
+        if (error) throw error;
         response.status(200).json({
             "page": page + 1,
-            "error" : false,
-            "products" : result
+            "error": false,
+            "products": result
         })
     })
 });
@@ -70,11 +70,11 @@ router.get("/", (request, response) => {
     var page_size = request.query.page_size;
 
 
-    if(page == null || page < 1){
+    if (page == null || page < 1) {
         page = 1;
     }
- 
-    if(page_size == null){
+
+    if (page_size == null) {
         page_size = 20;
     }
 
@@ -94,6 +94,7 @@ router.get("/", (request, response) => {
     //const query = "SELECT * FROM product WHERE category = ? LIMIT ? OFFSET ?";
     const query = `SELECT product.id,
     product.product_name,
+    product.product_detail,
     product.price,
     product.quantity,
     product.supplier,
@@ -106,14 +107,14 @@ router.get("/", (request, response) => {
     LIMIT ? OFFSET ?`;
 
     database.query(query, args, (error, result) => {
-        if(error) throw error
+        if (error) throw error
         response.status(200).json({
-            "page": offset + 1,  //2
-            "error" : false,
-            "products" : result
+            "page": offset + 1, //2
+            "error": false,
+            "products": result
         })
     });
-}); 
+});
 
 // Search for products
 router.get("/search", (request, response) => {
@@ -122,11 +123,11 @@ router.get("/search", (request, response) => {
     var page = request.query.page;
     var page_size = request.query.page_size;
 
-    if(page == null || page < 1){
+    if (page == null || page < 1) {
         page = 1;
     }
- 
-    if(page_size == null){
+
+    if (page_size == null) {
         page_size = 20;
     }
 
@@ -150,6 +151,7 @@ router.get("/search", (request, response) => {
 
     const query = `SELECT product.id,
     product.product_name,
+    product.product_detail,
     product.price,
     product.quantity,
     product.supplier,
@@ -163,37 +165,38 @@ router.get("/search", (request, response) => {
 
 
     database.query(query, args, (error, result) => {
-        if(error) throw error
+        if (error) throw error
         response.status(200).json({
             "page": page + 1,
-            "error" : false,
-            "products" : result
+            "error": false,
+            "products": result
         })
     });
-}); 
+});
 
 // Insert Product
 router.post("/insert", checkAuth, uploadImage.single('image'), (request, response) => {
     const name = request.body.name
+    const desc = request.body.desc
     const price = request.body.price
     const quantity = request.body.quantity
     const supplier = request.body.supplier
     const category = request.body.category
-    
+
     const file = request.file;
     var filePath = ""
-    if(file != null){
+    if (file != null) {
         filePath = file.path
     }
-   
-    const query = "INSERT INTO product(product_name, price, quantity, supplier, category, image) VALUES(?, ?, ?, ?, ?,?)"
-        
-    const args = [name, price, quantity, supplier, category, filePath]
 
-        database.query(query, args, (error, result) => {
-            if (error) throw error
-            response.status(200).send("Product Inserted")
-        });
+    const query = "INSERT INTO product(product_name, product_detail, price, quantity, supplier, category) VALUES(?, ?, ?, ?, ?, ?)"
+
+    const args = [name, desc, price, quantity, supplier, category, filePath]
+
+    database.query(query, args, (error, result) => {
+        if (error) throw error
+        response.status(200).send("Product Inserted")
+    });
 });
 
 // Delete Product
@@ -203,7 +206,7 @@ router.delete("/:id", (request, response) => {
     const args = [id]
 
     database.query(query, args, (error, result) => {
-        if(error) throw error
+        if (error) throw error
         response.status(200).send("Product is deleted")
     });
 });
@@ -211,10 +214,10 @@ router.delete("/:id", (request, response) => {
 // Update image of product
 router.put("/update", uploadImage.single('image'), (request, response) => {
     const id = request.body.id;
-    
+
     const file = request.file;
     var filePath = ""
-    if(file != null){
+    if (file != null) {
         filePath = file.path
     }
 
@@ -222,7 +225,7 @@ router.put("/update", uploadImage.single('image'), (request, response) => {
     database.query(selectQuery, id, (error, result) => {
 
         console.log(result)
-        if(error) throw error
+        if (error) throw error
         try {
             // Get value from key image
             var image = result[0]['image'];
@@ -233,16 +236,16 @@ router.put("/update", uploadImage.single('image'), (request, response) => {
         }
     });
 
-    const query = "UPDATE product SET image = ? WHERE id = ?"  
-    
-    const args = [filePath,id]
+    const query = "UPDATE product SET image = ? WHERE id = ?"
+
+    const args = [filePath, id]
 
     database.query(query, args, (error, result) => {
-        if(error) throw error
+        if (error) throw error
 
-        if(result['affectedRows']  == 1){
+        if (result['affectedRows'] == 1) {
             response.status(200).send("Product Image is updated")
-        }else{
+        } else {
             response.status(500).send("Invalid Update")
         }
     });

@@ -25,18 +25,14 @@ router.post("/add", (request, response) => {
 
         result = result[0]["category"]
 
-        if (result == "mobile") {
+        if (result == "clothes") {
             order_number = '55' + util.getRandomInt(100000, 999999)
         } else if (result == "cosmetic") {
             order_number = '66' + util.getRandomInt(100000, 999999)
-        } else if (result == "baby") {
-            order_number = '77' + util.getRandomInt(100000, 999999)
-        } else if (result == "toy") {
-            order_number = '88' + util.getRandomInt(100000, 999999)
         }
 
         if (typeof status == 'undefined' && status == null) {
-            status = "shipped";
+            status = "odesláno";
         }
 
         const query = "INSERT INTO Ordering(order_number, order_date ,status,name_on_card, card_number,expiration_date,user_id, product_id) VALUES(?,NOW(),?,?,?,?,?,?)"
@@ -72,15 +68,11 @@ router.get("/", (request, response) => {
 
         console.log(result)
 
-        if (result === "mobile") {
+        if (result === "clothes") {
             console.log('hello')
             order_number = 55 + getRandomInt(100000, 999999)
         } else if (result == "cosmetic") {
             order_number = 66 + getRandomInt(100000, 999999)
-        } else if (result == "baby") {
-            order_number = 77 + getRandomInt(100000, 999999)
-        } else if (result == "toy") {
-            order_number = 88 + getRandomInt(100000, 999999)
         }
 
         response.status(200).json({
@@ -122,16 +114,16 @@ router.get("/get", (request, response) => {
     ];
 
     const query = `SELECT DISTINCT Ordering.order_number,
-                          DATE_FORMAT(Ordering.order_date, '%d/%m/%Y') As order_date, 
-                          Ordering.status,Product.product_name,
-                          Product.price,
-                          Product.id,
-                          User.name,
-                          Shipping.address
-                          FROM Ordering JOIN Product JOIN User JOIN Shipping 
-                          ON Ordering.product_id = product.id AND Ordering.user_id = user.id AND Ordering.product_id = Shipping.product_id
-                          WHERE Ordering.user_id = ? 
-                          LIMIT ? OFFSET ?`
+                        DATE_FORMAT(Ordering.order_date, '%d.%m.%Y') As order_date, 
+                        Ordering.status, Product.product_name,
+                        Product.price,
+                        Product.id,
+                        User.name,
+                        Shipping.address
+                        FROM Ordering JOIN Product JOIN User JOIN Shipping 
+                        ON Ordering.product_id = product.id AND Ordering.user_id = user.id AND Ordering.product_id = Shipping.product_id
+                        WHERE Ordering.user_id = ?  group by Ordering.order_number 
+                        LIMIT ? OFFSET ?`
 
     database.query(query, args, (error, orders) => {
         if (error) throw error;

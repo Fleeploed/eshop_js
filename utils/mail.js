@@ -1,6 +1,7 @@
 const nodemailer = require('nodemailer');
+require('dotenv').config();
 
-const serverSupportMail = 'mardroid.apps@gmail.com'
+const serverSupportMail = 'alisher.ibraev.2000@gmail.com'
 const serverSupportPassword = process.env.EMAIL_PASSWORD
 
 const transporter = nodemailer.createTransport({
@@ -12,15 +13,13 @@ const transporter = nodemailer.createTransport({
 });
 
 function sendOptMail(email, otpCode) {
-
     var mailOptions = {
-        from: 'mardroid.apps@gmail.com',
+        from: 'alisher.ibraev.2000@gmail.com',
         to: email,
         subject: 'eshop password assistance',
-        text: 'To authenticate, please use the following One Time Password (OTP): \n' + otpCode + '\nDo not share this OTP with anyone.\n eshop takes your account security very seriously.' +
-            '\ eshop will never ask you to disclose or varify your eshop password, OTP, credit card, or banking account number'
+        text: 'K ověření použijte následující přístupový kód: \n' + otpCode +
+            '\nTento přístupový kód s nikým nesdílejte.\n Zabezpečení vašeho účtu velmi vážně.'
     };
-
 
     transporter.sendMail(mailOptions, function(error, info) {
         if (error) {

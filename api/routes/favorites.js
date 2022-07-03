@@ -12,15 +12,15 @@ router.get("/", (request, response) => {
 
     console.log(typeof page);
 
-    if(page == null){
+    if (page == null) {
         page = 0;
-     }
- 
-     if(page_size == null){
-        page_size = 25;
-     }
+    }
 
-     const args = [
+    if (page_size == null) {
+        page_size = 25;
+    }
+
+    const args = [
         userId,
         userId,
         parseInt(page_size),
@@ -28,7 +28,8 @@ router.get("/", (request, response) => {
     ];
 
     const query = `SELECT product.id,
-                          product.product_name, 
+                          product.product_name,
+                          product.product_detail, 
                           product.price, product.image, 
                           product.category, 
                           product.quantity, 
@@ -40,9 +41,9 @@ router.get("/", (request, response) => {
                           LIMIT ? OFFSET ?`
 
     database.query(query, args, (error, result) => {
-        if(error) throw error;
+        if (error) throw error;
         response.status(200).json({
-            "favorites" : result
+            "favorites": result
         })
 
     })
@@ -52,9 +53,9 @@ router.get("/", (request, response) => {
 router.post("/add", (request, response) => {
     const userId = request.body.userId
     const productId = request.body.productId
-  
+
     const query = "INSERT INTO favorite(user_Id, product_Id) VALUES(?, ?)"
-   
+
     const args = [userId, productId]
 
     database.query(query, args, (error, result) => {
@@ -69,7 +70,7 @@ router.post("/add", (request, response) => {
         }
     });
 });
-      
+
 // Delete Favorite Product
 router.delete("/remove", (request, response) => {
     const userId = request.query.userId;
@@ -78,9 +79,9 @@ router.delete("/remove", (request, response) => {
     const args = [userId, productId]
 
     database.query(query, args, (error, result) => {
-        if(error) throw error
+        if (error) throw error
         response.status(200).send("Bookmark as Unfavorite")
     });
 });
- 
+
 module.exports = router

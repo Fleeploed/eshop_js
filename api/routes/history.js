@@ -10,11 +10,11 @@ router.get("/", (request, response) => {
     var page = request.query.page;
     var page_size = request.query.page_size;
 
-    if(page == null || page < 1){
+    if (page == null || page < 1) {
         page = 1;
     }
- 
-    if(page_size == null){
+
+    if (page_size == null) {
         page_size = 20;
     }
 
@@ -30,9 +30,10 @@ router.get("/", (request, response) => {
         parseInt(page_size),
         parseInt(page)
     ];
-    
+
     const query = `SELECT product.id,
                           product.product_name,
+                          product.product_detail,
                           product.price,
                           product.image,
                           product.category,
@@ -46,11 +47,11 @@ router.get("/", (request, response) => {
                           LIMIT ? OFFSET ?`;
 
     database.query(query, args, (error, result) => {
-        if(error) throw error;
+        if (error) throw error;
         response.status(200).json({
             "page": offset + 1,
-            "error" : false,
-            "history" : result
+            "error": false,
+            "history": result
         })
 
     })
@@ -60,9 +61,9 @@ router.get("/", (request, response) => {
 router.post("/add", (request, response) => {
     const userId = request.body.userId
     const productId = request.body.productId
-  
+
     const query = "INSERT INTO history(user_Id, product_Id) VALUES(?, ?)"
-   
+
     const args = [userId, productId]
 
     database.query(query, args, (error, result) => {
@@ -85,10 +86,10 @@ router.delete("/remove", (request, response) => {
     const query = "DELETE FROM history"
 
     database.query(query, (error, result) => {
-        if(error) throw error
+        if (error) throw error
         response.status(200).send("Removed All From History")
     });
 });
-     
+
 
 module.exports = router

@@ -1,8 +1,8 @@
 const express = require('express')
 const router = express.Router()
-// For Token
+    // For Token
 const jwt = require('jsonwebtoken')
-// For encrypted password
+    // For encrypted password
 const bcrypt = require('bcrypt');
 const checkAuth = require('../../middleware/check_auth');
 
@@ -11,7 +11,7 @@ const fileSystem = require('fs');
 
 // Upload and store images
 const multer = require('multer')
-// Send mail
+    // Send mail
 const mail_util = require('../../utils/mail');
 
 const storage = multer.diskStorage({
@@ -40,25 +40,25 @@ router.get("/", (request, response) => {
 
     console.log(typeof page);
 
-    if(page == null){
+    if (page == null) {
         page = 0;
-     }
- 
-     if(page_size == null){
-        page_size = 25;
-     }
+    }
 
-     const args = [
+    if (page_size == null) {
+        page_size = 25;
+    }
+
+    const args = [
         parseInt(page_size),
         parseInt(page)
     ];
 
     const query = "SELECT * FROM user LIMIT ? OFFSET ?"
     database.query(query, args, (error, result) => {
-        if(error) throw error;
+        if (error) throw error;
         response.status(200).json({
-            "error" : false,
-            "users" : result
+            "error": false,
+            "users": result
         })
 
     })
@@ -71,106 +71,90 @@ router.get("/login", (request, response) => {
     const query = "SELECT id, password, name, email, if(isAdmin=1,  'true', 'false') as isAdmin FROM user WHERE email = ?";
     const args = [email]
     database.query(query, args, (error, result) => {
-        if(error) throw error
-        if(result.length == 1){
+        if (error) throw error
+        if (result.length == 1) {
             const dataPassword = result[0]['password'];
             // Compare two passwords
             bcrypt.compare(password, dataPassword, (err, isSame) => {
-                if(isSame){
+                if (isSame) {
                     // Return Token
                     jwt.sign(email, process.env.JWT_KEY, (err, token) => {
                         if (err) throw err;
                         response.status(200).json({
-                           "id" : result[0]["id"],
-                           "name" : result[0]["name"],
-                           "email" : result[0]["email"],
-                           "isAdmin" : result[0]["isAdmin"],
-                           "error" : false, 
-                           "message" : "Successful Login",
-                           "password": password,
-                           "token" : token});
+                            "id": result[0]["id"],
+                            "name": result[0]["name"],
+                            "email": result[0]["email"],
+                            "isAdmin": result[0]["isAdmin"],
+                            "error": false,
+                            "message": "Successful Login",
+                            "password": password,
+                            "token": token
+                        });
                     });
-                }else{
+                } else {
                     response.status(500).send("Invalid Password")
                 }
             });
-        }else{
+        } else {
             response.status(214).json({
-                "error" : true, 
-                "message" : "Account does not exist"});
+                "error": true,
+                "message": "Account does not exist"
+            });
         }
     });
 });
 
 // Insert User
-router.post("/register",uploadImage.single('image'), (request, response) => {
+router.post("/register", uploadImage.single('image'), (request, response) => {
     const name = request.body.name
     const email = request.body.email
     const password = request.body.password
-    var gender = request.body.gender
-    var age = request.body.age
 
     const checkQuery = "SELECT id FROM user WHERE email = ?"
-    database.query(checkQuery, email , (error, result)  => {
-        if(error) throw error;
-        if(result.length != 0){
+    database.query(checkQuery, email, (error, result) => {
+        if (error) throw error;
+        if (result.length != 0) {
             response.status(217).json({
-                "error" : true,
-                "message" : "User Already Registered"
+                "error": true,
+                "message": "User Already Registered"
             })
-        }else{
+        } else {
 
-            // Register new user
-            if(typeof gender == 'undefined' && gender == null){
-                gender = "undertermined";
-            }
-        
-            if(typeof age == 'undefined' && age == null){
-                age = 0;
-            }
-        
             const file = request.file;
             var filePath = ""
-            if(file != null){
+            if (file != null) {
                 filePath = file.path
             }
-        
-            if(password.length < 8){
+
+            if (password.length < 8) {
                 response.status(500).send("Invalid Password")
             }
-                
-            const query = "INSERT INTO user(name, email, password, gender, age, image) VALUES(?, ?, ?, ?, ?,?)"
-                
+
+            const query = "INSERT INTO user(name, email, password, image) VALUES(?, ?, ?,?)"
+
             // Encrypt Password
             bcrypt.hash(password, 10, (error, hashedPassword) => {
-                if(error) throw error
-        
-                const args = [name, email, hashedPassword, gender, age, filePath]
-        
+                if (error) throw error
+
+                const args = [name, email, hashedPassword, filePath]
+
                 database.query(query, args, (error, result) => {
                     if (error) throw error
-                    /*
-                    response.status(200).json({
-                        "id" : result.insertId,
-                        "error" : false,
-                        "message" : "Register Done"
+                    const userQuery = "SELECT id, name, email, password, if(isAdmin=1,  'true', 'false') as isAdmin FROM user WHERE id = ?";
+                    database.query(userQuery, result.insertId, (err, res) => {
+                        if (error) throw error
+                        response.status(200).json({
+                            "error": false,
+                            "message": "Register Done",
+                            "user": res[0],
+                        })
                     })
-                    */
-                   const userQuery = "SELECT id, name, email, password, if(isAdmin=1,  'true', 'false') as isAdmin FROM user WHERE id = ?";
-                   database.query(userQuery, result.insertId, (err, res) => {
-                       if (error) throw error
-                       response.status(200).json({
-                           "error" : false,
-                           "message" : "Register Done",
-                           "user" : res[0],
-                       })
-                   })
                 });
             });
         }
     });
 });
-    
+
 // Delete User
 router.delete("/:id", checkAuth, (request, response) => {
     const id = request.params.id;
@@ -178,28 +162,28 @@ router.delete("/:id", checkAuth, (request, response) => {
     const args = [id]
 
     database.query(query, args, (error, result) => {
-        if(error) throw error
+        if (error) throw error
         response.status(200).send("Account is deleted")
     });
 });
- 
+
 // Update Password
 router.put("/info", checkAuth, (request, response) => {
     const id = request.query.id;
     const password = request.query.password;
 
-    const query = "UPDATE user SET password = ? WHERE id = ?"    
-   
+    const query = "UPDATE user SET password = ? WHERE id = ?"
+
     // Encrypt Password
     bcrypt.hash(password, 10, (error, hashedPassword) => {
-        if(error) throw error
+        if (error) throw error
 
-        const args = [hashedPassword,id]
+        const args = [hashedPassword, id]
 
         database.query(query, args, (error, result) => {
-            if(result['affectedRows']  == 1){
+            if (result['affectedRows'] == 1) {
                 response.status(200).send("Password is updated")
-            }else{
+            } else {
                 response.status(500).send("Invalid Update")
             }
         });
@@ -214,7 +198,7 @@ router.put("/upload", checkAuth, uploadImage.single('image'), (request, response
 
     const file = request.file;
     var filePath = ""
-    if(file != null){
+    if (file != null) {
         filePath = file.path
     }
     console.log(filePath);
@@ -223,7 +207,7 @@ router.put("/upload", checkAuth, uploadImage.single('image'), (request, response
     database.query(selectQuery, id, (error, result) => {
 
         console.log(result)
-        if(error) throw error
+        if (error) throw error
         try {
             // Get value from key image
             var image = result[0]['image'];
@@ -234,16 +218,16 @@ router.put("/upload", checkAuth, uploadImage.single('image'), (request, response
         }
     });
 
-    const query = "UPDATE user SET image = ? WHERE id = ?"  
-    
-    const args = [filePath,id]
+    const query = "UPDATE user SET image = ? WHERE id = ?"
+
+    const args = [filePath, id]
 
     database.query(query, args, (error, result) => {
-        if(error) throw error
+        if (error) throw error
 
-        if(result['affectedRows']  == 1){
+        if (result['affectedRows'] == 1) {
             response.status(200).send("User Photo is updated")
-        }else{
+        } else {
             response.status(500).send("Invalid Update")
         }
     });
@@ -254,20 +238,20 @@ router.put("/upload", checkAuth, uploadImage.single('image'), (request, response
 // Get Image
 router.get("/getImage", (request, response) => {
     const id = request.query.id;
-   
+
     const args = [id];
 
     const query = "SELECT image FROM user WHERE id = ?";
 
     database.query(query, args, (error, result) => {
-        if(error) throw error
+        if (error) throw error
         response.status(200).json({
-            "error" : false,
-            "message" : "Setting Image",
-            "image" : result[0]["image"],
+            "error": false,
+            "message": "Setting Image",
+            "image": result[0]["image"],
         })
     });
-}); 
+});
 
 
 // Get OTP
@@ -279,22 +263,22 @@ router.get("/otp", checkAuth, (request, response) => {
     const query = "SELECT email FROM user WHERE email = ?"
     database.query(query, args, (error, result) => {
         // Error in database
-        if(error) throw error;
+        if (error) throw error;
 
         // if email is correct
-        if(result.length == 1) {
+        if (result.length == 1) {
 
             const otp = mail_util.getRandomInt(100000, 999999)
             mail_util.sendOptMail(email, otp);
-           
+
             response.status(200).json({
-                "error" : false,
+                "error": false,
                 "otp": otp,
-                "email": email
+                "email": email,
             });
 
-        } else{
-            response.status(500).json({"error" : true,"message": "Incorrect Email"});
+        } else {
+            response.status(500).json({ "error": true, "message": "Incorrect Email" });
         }
     })
 });
